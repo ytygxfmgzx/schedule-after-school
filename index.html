@@ -377,6 +377,42 @@
       text-align: center;
     }
 
+    .calendar-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .view-toggle {
+      display: flex;
+      background: var(--md-surface-container);
+      border-radius: 20px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .view-toggle-btn {
+      padding: 6px 16px;
+      border: none;
+      background: transparent;
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .view-toggle-btn:hover {
+      background: var(--md-surface-container-high);
+    }
+
+    .view-toggle-btn.active {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+    }
+
     /* Conflict Alert */
     .conflict-alert {
       background: var(--md-error-container);
@@ -845,7 +881,13 @@
             <span class="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
-        <button class="btn btn-text" onclick="goToToday()">今天</button>
+        <div class="calendar-controls">
+          <div class="view-toggle" id="viewToggle">
+            <button class="view-toggle-btn active" data-view="all" onclick="setViewMode('all')">全部课程</button>
+            <button class="view-toggle-btn" data-view="scheduled" onclick="setViewMode('scheduled')">仅已排课</button>
+          </div>
+          <button class="btn btn-text" onclick="goToToday()">今天</button>
+        </div>
       </div>
 
       <div class="calendar-wrapper" id="calendarWrapper">
@@ -966,6 +1008,7 @@
     let selectedWeekdays = [];
     let editingCourseId = null;
     let contextMenuEvent = null;
+    let viewMode = 'all'; // 'all' | 'scheduled'
 
     const colors = ['#1a73e8', '#188038', '#e8710a', '#d93025', '#9334e6', '#e91e63', '#00897b', '#5f6368'];
 
@@ -1264,6 +1307,10 @@
         if (course.isActive === false) return;
         const session = course.sessions.find(s => s.date === dateStr);
         if (session) {
+          // 根据视图模式过滤
+          if (viewMode === 'scheduled' && session.status === 'cancelled') {
+            return; // 跳过已取消的课程
+          }
           events.push({
             courseId: course.id,
             courseName: course.name,
@@ -1305,6 +1352,15 @@
 
     function goToToday() {
       currentMonth = new Date();
+      renderCalendar();
+    }
+
+    // ========== View Mode ==========
+    function setViewMode(mode) {
+      viewMode = mode;
+      document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === mode);
+      });
       renderCalendar();
     }
 
