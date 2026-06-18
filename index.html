@@ -846,6 +846,10 @@
         <span class="material-symbols-outlined">upload</span>
         导入数据
       </button>
+      <button class="btn btn-outlined" style="color: var(--md-error); border-color: var(--md-error);" onclick="clearAllData()">
+        <span class="material-symbols-outlined">delete_sweep</span>
+        清空数据
+      </button>
       <button class="btn btn-filled" onclick="exportImage()">
         <span class="material-symbols-outlined">image</span>
         导出图片
@@ -1582,6 +1586,20 @@
           courses = [];
         }
       }
+    }
+
+    function clearAllData() {
+      if (courses.length === 0) {
+        showSnackbar('当前没有课程数据');
+        return;
+      }
+      if (!confirm('确定要清空全部课程数据吗？此操作不可撤销！')) return;
+      courses = [];
+      saveData();
+      renderCalendar();
+      renderCourseList();
+      detectConflicts();
+      showSnackbar('全部课程数据已清空');
     }
 
     function exportData() {
