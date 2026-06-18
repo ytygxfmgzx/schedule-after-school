@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>兴趣班排课小助手</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* ========== CSS Variables - Material Design 3 ========== */
+    :root {
+      /* Primary */
+      --md-primary: #1a73e8;
+      --md-on-primary: #ffffff;
+      --md-primary-container: #d3e3fd;
+      --md-on-primary-container: #041e49;
+
+      /* Secondary */
+      --md-secondary: #5f6368;
+      --md-on-secondary: #ffffff;
+      --md-secondary-container: #e8eaed;
+      --md-on-secondary-container: #1f1f1f;
+
+      /* Tertiary */
+      --md-tertiary: #188038;
+      --md-on-tertiary: #ffffff;
+      --md-tertiary-container: #ceead6;
+
+      /* Error */
+      --md-error: #d93025;
+      --md-on-error: #ffffff;
+      --md-error-container: #fce8e6;
+
+      /* Surface */
+      --md-surface: #ffffff;
+      --md-surface-dim: #f1f3f4;
+      --md-surface-container: #f8f9fa;
+      --md-surface-container-low: #ffffff;
+      --md-surface-container-high: #e8eaed;
+      --md-on-surface: #1f1f1f;
+      --md-on-surface-variant: #5f6368;
+
+      /* Outline */
+      --md-outline: #dadce0;
+      --md-outline-variant: #e8eaed;
+
+      /* Elevation */
+      --md-elevation-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      --md-elevation-2: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+      --md-elevation-3: 0 4px 8px 3px rgba(60,64,67,0.15), 0 1px 3px rgba(60,64,67,0.3);
+
+      /* Shape */
+      --md-shape-small: 8px;
+      --md-shape-medium: 12px;
+      --md-shape-large: 16px;
+      --md-shape-extra-large: 28px;
+
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+    }
+
+    /* ========== Reset & Base ========== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--md-surface-dim);
+      color: var(--md-on-surface);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ========== Material Design Components ========== */
+
+    /* Top App Bar */
+    .top-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--md-surface);
+      border-bottom: 1px solid var(--md-outline);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .top-app-bar h1 {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .top-app-bar h1 .material-symbols-outlined {
+      font-size: 28px;
+      color: var(--md-primary);
+    }
+
+    .top-app-bar-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: 0 24px;
+      height: 40px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    .btn-filled {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+    }
+
+    .btn-filled:hover {
+      box-shadow: var(--md-elevation-1);
+      filter: brightness(1.08);
+    }
+
+    .btn-outlined {
+      background: transparent;
+      color: var(--md-primary);
+      border: 1px solid var(--md-outline);
+    }
+
+    .btn-outlined:hover {
+      background: var(--md-primary-container);
+    }
+
+    .btn-text {
+      background: transparent;
+      color: var(--md-primary);
+    }
+
+    .btn-text:hover {
+      background: rgba(26, 115, 232, 0.08);
+    }
+
+    .btn-tonal {
+      background: var(--md-primary-container);
+      color: var(--md-on-primary-container);
+    }
+
+    .btn-tonal:hover {
+      box-shadow: var(--md-elevation-1);
+    }
+
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      color: var(--md-on-surface-variant);
+    }
+
+    .btn-icon:hover {
+      background: var(--md-surface-container-high);
+    }
+
+    /* Main Layout */
+    .main-container {
+      display: flex;
+      height: calc(100vh - 64px);
+    }
+
+    /* Side Panel */
+    .side-panel {
+      width: 360px;
+      min-width: 360px;
+      background: var(--md-surface);
+      border-right: 1px solid var(--md-outline);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border-bottom: 1px solid var(--md-outline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-header h2 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+    }
+
+    .course-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md);
+    }
+
+    .course-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .course-list::-webkit-scrollbar-thumb {
+      background: var(--md-outline);
+      border-radius: 4px;
+    }
+
+    /* Course Card */
+    .course-card {
+      background: var(--md-surface-container-low);
+      border: 1px solid var(--md-outline);
+      border-radius: var(--md-shape-medium);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      transition: box-shadow 0.2s;
+    }
+
+    .course-card:hover {
+      box-shadow: var(--md-elevation-1);
+    }
+
+    .course-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .course-color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .course-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+      flex: 1;
+    }
+
+    .course-actions {
+      display: flex;
+      gap: 2px;
+    }
+
+    .course-actions .btn-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .course-actions .btn-icon .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    .course-info {
+      font-size: 13px;
+      color: var(--md-on-surface-variant);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 24px;
+    }
+
+    .course-info-row {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .course-info-row .material-symbols-outlined {
+      font-size: 16px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xl);
+      text-align: center;
+      color: var(--md-on-surface-variant);
+    }
+
+    .empty-state .material-symbols-outlined {
+      font-size: 64px;
+      margin-bottom: var(--spacing-md);
+      color: var(--md-outline);
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Calendar Panel */
+    .calendar-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--md-surface-container);
+    }
+
+    .calendar-header {
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: var(--md-surface);
+      border-bottom: 1px solid var(--md-outline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .month-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+      min-width: 160px;
+      text-align: center;
+    }
+
+    /* Conflict Alert */
+    .conflict-alert {
+      background: var(--md-error-container);
+      border-radius: var(--md-shape-medium);
+      padding: var(--spacing-md);
+      margin: var(--spacing-md) var(--spacing-lg);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-sm);
+    }
+
+    .conflict-alert .material-symbols-outlined {
+      color: var(--md-error);
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .conflict-alert-content {
+      flex: 1;
+    }
+
+    .conflict-alert-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--md-error);
+      margin-bottom: 4px;
+    }
+
+    .conflict-alert-text {
+      font-size: 13px;
+      color: var(--md-on-surface);
+      line-height: 1.6;
+    }
+
+    /* Calendar Grid */
+    .calendar-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .calendar {
+      background: var(--md-surface);
+      border-radius: var(--md-shape-large);
+      box-shadow: var(--md-elevation-1);
+      overflow: hidden;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: var(--md-surface-container);
+      border-bottom: 1px solid var(--md-outline);
+    }
+
+    .weekday {
+      padding: var(--spacing-sm) var(--spacing-xs);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--md-on-surface-variant);
+      text-transform: uppercase;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .calendar-day {
+      min-height: 100px;
+      max-height: 180px;
+      padding: var(--spacing-sm);
+      border-right: 1px solid var(--md-outline-variant);
+      border-bottom: 1px solid var(--md-outline-variant);
+      background: var(--md-surface);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .calendar-day:nth-child(7n) {
+      border-right: none;
+    }
+
+    .calendar-day.other-month {
+      background: var(--md-surface-dim);
+    }
+
+    .calendar-day.other-month .day-number {
+      color: var(--md-outline);
+    }
+
+    .calendar-day.today {
+      background: var(--md-primary-container);
+    }
+
+    .day-number {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+      margin-bottom: 4px;
+    }
+
+    .today .day-number {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-events {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .day-events::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .day-events::-webkit-scrollbar-thumb {
+      background: var(--md-outline);
+      border-radius: 2px;
+    }
+
+    .event-chip {
+      font-size: 10px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+
+    .event-chip.scheduled {
+      color: white;
+    }
+
+    .event-chip.cancelled {
+      background: var(--md-surface-container-high) !important;
+      color: var(--md-on-surface-variant) !important;
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .calendar-panel.export-mode .event-chip.cancelled {
+      display: none;
+    }
+
+    .event-chip.conflict {
+      outline: 2px solid var(--md-error);
+      outline-offset: 1px;
+    }
+
+    .event-chip:hover {
+      filter: brightness(0.95);
+    }
+
+    .event-chip .event-time {
+      font-size: 9px;
+      opacity: 0.9;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--md-surface);
+      border-radius: var(--md-shape-extra-large);
+      box-shadow: var(--md-elevation-3);
+      width: 90%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.9);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+    }
+
+    .modal-header h2 {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--md-on-surface);
+    }
+
+    .modal-body {
+      padding: 0 var(--spacing-lg);
+    }
+
+    .modal-footer {
+      padding: var(--spacing-lg);
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
+    }
+
+    /* Form Fields - Material Design */
+    .form-field {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--md-on-surface-variant);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .form-field input,
+    .form-field select {
+      width: 100%;
+      height: 48px;
+      padding: 0 var(--spacing-md);
+      border: 1px solid var(--md-outline);
+      border-radius: var(--md-shape-small);
+      font-size: 16px;
+      font-family: inherit;
+      color: var(--md-on-surface);
+      background: var(--md-surface);
+      transition: border-color 0.2s;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus {
+      outline: none;
+      border-color: var(--md-primary);
+      border-width: 2px;
+    }
+
+    .form-field input::placeholder {
+      color: var(--md-on-surface-variant);
+    }
+
+    .form-row {
+      display: flex;
+      gap: var(--spacing-md);
+    }
+
+    .form-row .form-field {
+      flex: 1;
+    }
+
+    /* Weekday Selector */
+    .weekday-selector {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    .weekday-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--md-outline);
+      background: var(--md-surface);
+      color: var(--md-on-surface-variant);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .weekday-btn:hover {
+      background: var(--md-surface-container-high);
+    }
+
+    .weekday-btn.active {
+      background: var(--md-primary);
+      color: var(--md-on-primary);
+      border-color: var(--md-primary);
+    }
+
+    /* Color Picker */
+    .color-picker {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border-color: var(--md-on-surface);
+      box-shadow: var(--md-elevation-1);
+    }
+
+    /* Event Context Menu */
+    .context-menu {
+      position: fixed;
+      background: var(--md-surface);
+      border-radius: var(--md-shape-small);
+      box-shadow: var(--md-elevation-3);
+      padding: var(--spacing-sm) 0;
+      z-index: 1001;
+      min-width: 180px;
+      display: none;
+    }
+
+    .context-menu.active {
+      display: block;
+    }
+
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-size: 14px;
+      color: var(--md-on-surface);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .context-menu-item:hover {
+      background: var(--md-surface-container-high);
+    }
+
+    .context-menu-item .material-symbols-outlined {
+      font-size: 20px;
+      color: var(--md-on-surface-variant);
+    }
+
+    /* Snackbar */
+    .snackbar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #323232;
+      color: white;
+      padding: 14px 24px;
+      border-radius: var(--md-shape-small);
+      box-shadow: var(--md-elevation-3);
+      font-size: 14px;
+      z-index: 2000;
+      transition: transform 0.3s;
+    }
+
+    .snackbar.active {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-container {
+        flex-direction: column;
+      }
+
+      .side-panel {
+        width: 100%;
+        min-width: 100%;
+        max-height: 40vh;
+      }
+
+      .calendar-day {
+        min-height: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top App Bar -->
+  <header class="top-app-bar">
+    <h1>
+      <span class="material-symbols-outlined">calendar_month</span>
+      兴趣班排课助手
+    </h1>
+    <div class="top-app-bar-actions">
+      <button class="btn btn-outlined" onclick="exportData()">
+        <span class="material-symbols-outlined">download</span>
+        导出数据
+      </button>
+      <button class="btn btn-outlined" onclick="importData()">
+        <span class="material-symbols-outlined">upload</span>
+        导入数据
+      </button>
+      <button class="btn btn-filled" onclick="exportImage()">
+        <span class="material-symbols-outlined">image</span>
+        导出图片
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Side Panel - Course List -->
+    <aside class="side-panel">
+      <div class="panel-header">
+        <h2>课程列表</h2>
+        <button class="btn btn-filled" onclick="openAddCourseModal()">
+          <span class="material-symbols-outlined">add</span>
+          添加课程
+        </button>
+      </div>
+      <div class="course-list" id="courseList">
+        <!-- Course cards will be rendered here -->
+      </div>
+    </aside>
+
+    <!-- Calendar Panel -->
+    <main class="calendar-panel">
+      <div class="calendar-header">
+        <div class="month-nav">
+          <button class="btn-icon" onclick="prevMonth()">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <span class="month-title" id="monthTitle"></span>
+          <button class="btn-icon" onclick="nextMonth()">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+        <button class="btn btn-text" onclick="goToToday()">今天</button>
+      </div>
+
+      <div class="calendar-wrapper" id="calendarWrapper">
+        <div class="calendar" id="calendar">
+          <div class="calendar-weekdays">
+            <div class="weekday">周日</div>
+            <div class="weekday">周一</div>
+            <div class="weekday">周二</div>
+            <div class="weekday">周三</div>
+            <div class="weekday">周四</div>
+            <div class="weekday">周五</div>
+            <div class="weekday">周六</div>
+          </div>
+          <div class="calendar-days" id="calendarDays">
+            <!-- Calendar days will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Course Modal -->
+  <div class="modal-overlay" id="courseModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">添加课程</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>课程名称 *</label>
+          <input type="text" id="courseName" placeholder="如：篮球集训">
+        </div>
+
+        <div class="form-field">
+          <label>教练/老师</label>
+          <input type="text" id="courseCoach" placeholder="如：陈教练">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>开始日期 *</label>
+            <input type="date" id="startDate">
+          </div>
+          <div class="form-field">
+            <label>结束日期 *</label>
+            <input type="date" id="endDate">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>上课时间 *</label>
+            <input type="time" id="startTime">
+          </div>
+          <div class="form-field">
+            <label>下课时间 *</label>
+            <input type="time" id="endTime">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>上课周期 *</label>
+          <div class="weekday-selector" id="weekdaySelector">
+            <button type="button" class="weekday-btn" data-day="0">日</button>
+            <button type="button" class="weekday-btn" data-day="1">一</button>
+            <button type="button" class="weekday-btn" data-day="2">二</button>
+            <button type="button" class="weekday-btn" data-day="3">三</button>
+            <button type="button" class="weekday-btn" data-day="4">四</button>
+            <button type="button" class="weekday-btn" data-day="5">五</button>
+            <button type="button" class="weekday-btn" data-day="6">六</button>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>课程颜色</label>
+          <div class="color-picker" id="colorPicker">
+            <div class="color-option" style="background: #1a73e8" data-color="#1a73e8"></div>
+            <div class="color-option" style="background: #188038" data-color="#188038"></div>
+            <div class="color-option" style="background: #e8710a" data-color="#e8710a"></div>
+            <div class="color-option" style="background: #d93025" data-color="#d93025"></div>
+            <div class="color-option" style="background: #9334e6" data-color="#9334e6"></div>
+            <div class="color-option" style="background: #e91e63" data-color="#e91e63"></div>
+            <div class="color-option" style="background: #00897b" data-color="#00897b"></div>
+            <div class="color-option" style="background: #5f6368" data-color="#5f6368"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-text" onclick="closeModal()">取消</button>
+        <button class="btn btn-filled" onclick="saveCourse()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="toggleEventStatus()">
+      <span class="material-symbols-outlined" id="contextMenuIcon">check_circle</span>
+      <span id="contextMenuText">设为不排课</span>
+    </div>
+    <div class="context-menu-item" onclick="toggleAllCourseStatus()">
+      <span class="material-symbols-outlined" id="contextMenuAllIcon">cancel</span>
+      <span id="contextMenuAllText">不排全部课</span>
+    </div>
+  </div>
+
+  <!-- Snackbar -->
+  <div class="snackbar" id="snackbar"></div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="fileInput" accept=".json" style="display: none" onchange="handleFileImport(event)">
+
+  <script>
+    // ========== Data Store ==========
+    let courses = [];
+    let currentMonth = new Date();
+    let selectedColor = '#1a73e8';
+    let selectedWeekdays = [];
+    let editingCourseId = null;
+    let contextMenuEvent = null;
+
+    const colors = ['#1a73e8', '#188038', '#e8710a', '#d93025', '#9334e6', '#e91e63', '#00897b', '#5f6368'];
+
+    // ========== Initialize ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      initWeekdaySelector();
+      initColorPicker();
+      renderCalendar();
+      renderCourseList();
+    });
+
+    // ========== Weekday Selector ==========
+    function initWeekdaySelector() {
+      const buttons = document.querySelectorAll('.weekday-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const day = parseInt(btn.dataset.day);
+          if (selectedWeekdays.includes(day)) {
+            selectedWeekdays = selectedWeekdays.filter(d => d !== day);
+            btn.classList.remove('active');
+          } else {
+            selectedWeekdays.push(day);
+            btn.classList.add('active');
+          }
+        });
+      });
+    }
+
+    // ========== Color Picker ==========
+    function initColorPicker() {
+      const options = document.querySelectorAll('.color-option');
+      options.forEach(opt => {
+        opt.addEventListener('click', () => {
+          options.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          selectedColor = opt.dataset.color;
+        });
+      });
+      // Select first by default
+      options[0].classList.add('selected');
+    }
+
+    // ========== Modal Functions ==========
+    function openAddCourseModal() {
+      editingCourseId = null;
+      document.getElementById('modalTitle').textContent = '添加课程';
+      document.getElementById('courseName').value = '';
+      document.getElementById('courseCoach').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('startTime').value = '';
+      document.getElementById('endTime').value = '';
+
+      selectedWeekdays = [];
+      document.querySelectorAll('.weekday-btn').forEach(btn => btn.classList.remove('active'));
+
+      selectedColor = colors[0];
+      document.querySelectorAll('.color-option').forEach((opt, i) => {
+        opt.classList.toggle('selected', i === 0);
+      });
+
+      document.getElementById('courseModal').classList.add('active');
+    }
+
+    function openEditCourseModal(courseId) {
+      const course = courses.find(c => c.id === courseId);
+      if (!course) return;
+
+      editingCourseId = courseId;
+      document.getElementById('modalTitle').textContent = '编辑课程';
+      document.getElementById('courseName').value = course.name;
+      document.getElementById('courseCoach').value = course.coach || '';
+      document.getElementById('startDate').value = course.startDate;
+      document.getElementById('endDate').value = course.endDate;
+      document.getElementById('startTime').value = course.startTime;
+      document.getElementById('endTime').value = course.endTime;
+
+      selectedWeekdays = [...course.weekdays];
+      document.querySelectorAll('.weekday-btn').forEach(btn => {
+        const day = parseInt(btn.dataset.day);
+        btn.classList.toggle('active', selectedWeekdays.includes(day));
+      });
+
+      selectedColor = course.color;
+      document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.color === selectedColor);
+      });
+
+      document.getElementById('courseModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('courseModal').classList.remove('active');
+    }
+
+    // ========== Course CRUD ==========
+    function saveCourse() {
+      const name = document.getElementById('courseName').value.trim();
+      const coach = document.getElementById('courseCoach').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+
+      if (!name || !startDate || !endDate || !startTime || !endTime) {
+        showSnackbar('请填写所有必填项');
+        return;
+      }
+
+      if (selectedWeekdays.length === 0) {
+        showSnackbar('请至少选择一个上课日');
+        return;
+      }
+
+      if (new Date(endDate) < new Date(startDate)) {
+        showSnackbar('结束日期不能早于开始日期');
+        return;
+      }
+
+      const sessions = generateSessions(startDate, endDate, startTime, endTime, selectedWeekdays);
+
+      if (editingCourseId) {
+        const courseIndex = courses.findIndex(c => c.id === editingCourseId);
+        if (courseIndex !== -1) {
+          const existingCourse = courses[courseIndex];
+          courses[courseIndex] = {
+            ...existingCourse,
+            name,
+            coach,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            weekdays: [...selectedWeekdays],
+            color: selectedColor,
+            sessions: mergeSessions(existingCourse.sessions, sessions)
+          };
+        }
+      } else {
+        courses.push({
+          id: generateId(),
+          name,
+          coach,
+          startDate,
+          endDate,
+          startTime,
+          endTime,
+          weekdays: [...selectedWeekdays],
+          color: selectedColor,
+          sessions
+        });
+      }
+
+      saveData();
+      closeModal();
+      renderCalendar();
+      renderCourseList();
+      detectConflicts();
+      showSnackbar(editingCourseId ? '课程已更新' : '课程已添加');
+    }
+
+    function deleteCourse(courseId) {
+      if (!confirm('确定要删除这个课程吗？')) return;
+      courses = courses.filter(c => c.id !== courseId);
+      saveData();
+      renderCalendar();
+      renderCourseList();
+      detectConflicts();
+      showSnackbar('课程已删除');
+    }
+
+    // ========== Generate Sessions ==========
+    function generateSessions(startDate, endDate, startTime, endTime, weekdays) {
+      const sessions = [];
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      let current = new Date(start);
+      while (current <= end) {
+        if (weekdays.includes(current.getDay())) {
+          sessions.push({
+            date: formatDate(current),
+            startTime,
+            endTime,
+            status: 'scheduled'
+          });
+        }
+        current.setDate(current.getDate() + 1);
+      }
+
+      return sessions;
+    }
+
+    function mergeSessions(existingSessions, newSessions) {
+      const merged = [...newSessions];
+      existingSessions.forEach(existing => {
+        const newSession = merged.find(s => s.date === existing.date);
+        if (newSession) {
+          newSession.status = existing.status;
+        }
+      });
+      return merged;
+    }
+
+    // ========== Calendar Rendering ==========
+    function renderCalendar() {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+
+      document.getElementById('monthTitle').textContent = `${year}年${month + 1}月`;
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      const startOffset = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+
+      const prevMonthLast = new Date(year, month, 0).getDate();
+
+      const today = new Date();
+      const todayStr = formatDate(today);
+
+      let html = '';
+
+      // Previous month days
+      for (let i = startOffset - 1; i >= 0; i--) {
+        const day = prevMonthLast - i;
+        const date = formatDate(new Date(year, month - 1, day));
+        html += renderDayCell(day, date, true, false);
+      }
+
+      // Current month days
+      for (let day = 1; day <= totalDays; day++) {
+        const date = formatDate(new Date(year, month, day));
+        const isToday = date === todayStr;
+        html += renderDayCell(day, date, false, isToday);
+      }
+
+      // Next month days
+      const remainingCells = 42 - (startOffset + totalDays);
+      for (let day = 1; day <= remainingCells; day++) {
+        const date = formatDate(new Date(year, month + 1, day));
+        html += renderDayCell(day, date, true, false);
+      }
+
+      document.getElementById('calendarDays').innerHTML = html;
+    }
+
+    function renderDayCell(day, dateStr, isOtherMonth, isToday) {
+      const events = getEventsForDate(dateStr);
+      const classes = ['calendar-day'];
+      if (isOtherMonth) classes.push('other-month');
+      if (isToday) classes.push('today');
+
+      let eventsHtml = '';
+
+      events.forEach(event => {
+        const chipClasses = ['event-chip'];
+        if (event.status === 'scheduled') chipClasses.push('scheduled');
+        if (event.status === 'cancelled') chipClasses.push('cancelled');
+        if (event.hasConflict) chipClasses.push('conflict');
+
+        eventsHtml += `
+          <div class="${chipClasses.join(' ')}"
+               style="background: ${event.color}"
+               onclick="handleEventClick(event, '${event.courseId}', '${dateStr}')"
+               title="${event.courseName} (${event.startTime}-${event.endTime})">
+            <span class="event-time">${event.startTime}</span>
+            ${event.courseName}
+          </div>
+        `;
+      });
+
+      return `
+        <div class="${classes.join(' ')}">
+          <div class="day-number">${day}</div>
+          <div class="day-events">${eventsHtml}</div>
+        </div>
+      `;
+    }
+
+    function getEventsForDate(dateStr) {
+      const events = [];
+      courses.forEach(course => {
+        const session = course.sessions.find(s => s.date === dateStr);
+        if (session) {
+          events.push({
+            courseId: course.id,
+            courseName: course.name,
+            color: course.color,
+            date: dateStr,
+            startTime: session.startTime,
+            endTime: session.endTime,
+            status: session.status,
+            hasConflict: false
+          });
+        }
+      });
+
+      // Mark conflicts
+      const conflicts = detectConflictsForDate(dateStr);
+      events.forEach(event => {
+        if (conflicts.some(c =>
+          c.courses.some(cc => cc.courseId === event.courseId)
+        )) {
+          event.hasConflict = true;
+        }
+      });
+
+      // Sort by start time
+      events.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      return events;
+    }
+
+    // ========== Navigation ==========
+    function prevMonth() {
+      currentMonth.setMonth(currentMonth.getMonth() - 1);
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentMonth.setMonth(currentMonth.getMonth() + 1);
+      renderCalendar();
+    }
+
+    function goToToday() {
+      currentMonth = new Date();
+      renderCalendar();
+    }
+
+    // ========== Conflict Detection ==========
+    function detectConflicts() {
+      // 冲突检测已移除，仅在日历上标记冲突
+    }
+
+    function detectConflictsForDate(dateStr) {
+      const events = [];
+      courses.forEach(course => {
+        const session = course.sessions.find(s => s.date === dateStr && s.status === 'scheduled');
+        if (session) {
+          events.push({
+            courseId: course.id,
+            courseName: course.name,
+            startTime: session.startTime,
+            endTime: session.endTime
+          });
+        }
+      });
+
+      const conflicts = [];
+      for (let i = 0; i < events.length; i++) {
+        for (let j = i + 1; j < events.length; j++) {
+          if (hasTimeOverlap(events[i], events[j])) {
+            conflicts.push({
+              date: dateStr,
+              courses: [events[i], events[j]]
+            });
+          }
+        }
+      }
+
+      return conflicts;
+    }
+
+    function hasTimeOverlap(a, b) {
+      const aStart = timeToMinutes(a.startTime);
+      const aEnd = timeToMinutes(a.endTime);
+      const bStart = timeToMinutes(b.startTime);
+      const bEnd = timeToMinutes(b.endTime);
+
+      return aStart < bEnd && bStart < aEnd;
+    }
+
+    function timeToMinutes(time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
+    function getDateRange() {
+      const dates = [];
+      courses.forEach(course => {
+        const start = new Date(course.startDate);
+        const end = new Date(course.endDate);
+        let current = new Date(start);
+        while (current <= end) {
+          dates.push(formatDate(current));
+          current.setDate(current.getDate() + 1);
+        }
+      });
+      return [...new Set(dates)];
+    }
+
+    // ========== Course List ==========
+    function renderCourseList() {
+      const listEl = document.getElementById('courseList');
+
+      if (courses.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <span class="material-symbols-outlined">school</span>
+            <h3>还没有课程</h3>
+            <p>点击"添加课程"开始排课</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = courses.map(course => `
+        <div class="course-card">
+          <div class="course-card-header">
+            <div class="course-color-dot" style="background: ${course.color}"></div>
+            <span class="course-name">${course.name}</span>
+            <div class="course-actions">
+              <button class="btn-icon" onclick="openEditCourseModal('${course.id}')" title="编辑">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="btn-icon" onclick="deleteCourse('${course.id}')" title="删除">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+          <div class="course-info">
+            ${course.coach ? `
+              <div class="course-info-row">
+                <span class="material-symbols-outlined">person</span>
+                ${course.coach}
+              </div>
+            ` : ''}
+            <div class="course-info-row">
+              <span class="material-symbols-outlined">event</span>
+              ${formatDateChinese(course.startDate)} - ${formatDateChinese(course.endDate)}
+            </div>
+            <div class="course-info-row">
+              <span class="material-symbols-outlined">schedule</span>
+              ${course.startTime} - ${course.endTime}
+            </div>
+            <div class="course-info-row">
+              <span class="material-symbols-outlined">repeat</span>
+              ${course.weekdays.map(d => '周' + '日一二三四五六'[d]).join('、')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== Event Context Menu ==========
+    function handleEventClick(e, courseId, dateStr) {
+      e.stopPropagation();
+
+      contextMenuEvent = { courseId, dateStr };
+      const course = courses.find(c => c.id === courseId);
+      const session = course?.sessions.find(s => s.date === dateStr);
+
+      if (session) {
+        const menu = document.getElementById('contextMenu');
+        const icon = document.getElementById('contextMenuIcon');
+        const text = document.getElementById('contextMenuText');
+        const allIcon = document.getElementById('contextMenuAllIcon');
+        const allText = document.getElementById('contextMenuAllText');
+
+        // 单节课状态
+        if (session.status === 'scheduled') {
+          icon.textContent = 'cancel';
+          text.textContent = '设为不排课';
+        } else {
+          icon.textContent = 'check_circle';
+          text.textContent = '恢复排课';
+        }
+
+        // 全部课状态
+        const allCancelled = course.sessions.every(s => s.status === 'cancelled');
+        if (allCancelled) {
+          allIcon.textContent = 'check_circle';
+          allText.textContent = '恢复全部课';
+        } else {
+          allIcon.textContent = 'cancel';
+          allText.textContent = '不排全部课';
+        }
+
+        menu.style.left = `${e.clientX}px`;
+        menu.style.top = `${e.clientY}px`;
+        menu.classList.add('active');
+      }
+    }
+
+    document.addEventListener('click', () => {
+      document.getElementById('contextMenu').classList.remove('active');
+    });
+
+    function toggleEventStatus() {
+      if (!contextMenuEvent) return;
+
+      const { courseId, dateStr } = contextMenuEvent;
+      const course = courses.find(c => c.id === courseId);
+      if (!course) return;
+
+      const session = course.sessions.find(s => s.date === dateStr);
+      if (session) {
+        session.status = session.status === 'scheduled' ? 'cancelled' : 'scheduled';
+        saveData();
+        renderCalendar();
+        detectConflicts();
+        showSnackbar(session.status === 'scheduled' ? '已恢复排课' : '已设为不排课');
+      }
+
+      contextMenuEvent = null;
+    }
+
+    function toggleAllCourseStatus() {
+      if (!contextMenuEvent) return;
+
+      const { courseId } = contextMenuEvent;
+      const course = courses.find(c => c.id === courseId);
+      if (!course) return;
+
+      const allCancelled = course.sessions.every(s => s.status === 'cancelled');
+      const newStatus = allCancelled ? 'scheduled' : 'cancelled';
+
+      course.sessions.forEach(session => {
+        session.status = newStatus;
+      });
+
+      saveData();
+      renderCalendar();
+      detectConflicts();
+      showSnackbar(newStatus === 'scheduled' ? '已恢复全部课' : '已设为不排全部课');
+
+      contextMenuEvent = null;
+    }
+
+    // ========== Data Persistence ==========
+    function saveData() {
+      localStorage.setItem('scheduleCourses', JSON.stringify(courses));
+    }
+
+    function loadData() {
+      const data = localStorage.getItem('scheduleCourses');
+      if (data) {
+        try {
+          courses = JSON.parse(data);
+        } catch (e) {
+          courses = [];
+        }
+      }
+    }
+
+    function exportData() {
+      const dataStr = JSON.stringify(courses, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `兴趣班排课_${formatDate(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showSnackbar('数据已导出');
+    }
+
+    function importData() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (Array.isArray(data)) {
+            courses = data;
+            saveData();
+            renderCalendar();
+            renderCourseList();
+            detectConflicts();
+            showSnackbar('数据已导入');
+          } else {
+            showSnackbar('无效的数据格式');
+          }
+        } catch (err) {
+          showSnackbar('导入失败：文件格式错误');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // ========== Export Image ==========
+    async function exportImage() {
+      const calendarPanel = document.querySelector('.calendar-panel');
+
+      try {
+        showSnackbar('正在生成图片...');
+        calendarPanel.classList.add('export-mode');
+
+        const canvas = await html2canvas(calendarPanel, {
+          backgroundColor: '#f8f9fa',
+          scale: 2,
+          useCORS: true
+        });
+
+        calendarPanel.classList.remove('export-mode');
+
+        const link = document.createElement('a');
+        link.download = `排课表_${document.getElementById('monthTitle').textContent}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        showSnackbar('图片已保存');
+      } catch (err) {
+        showSnackbar('导出失败，请重试');
+        console.error(err);
+      }
+    }
+
+    // ========== Utilities ==========
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDateChinese(dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      return `${parseInt(month)}月${parseInt(day)}日`;
+    }
+
+    function showSnackbar(message) {
+      const snackbar = document.getElementById('snackbar');
+      snackbar.textContent = message;
+      snackbar.classList.add('active');
+      setTimeout(() => snackbar.classList.remove('active'), 3000);
+    }
+  </script>
+</body>
+</html>
