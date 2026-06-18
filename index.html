@@ -246,7 +246,15 @@
       border-radius: var(--md-shape-medium);
       padding: var(--spacing-md);
       margin-bottom: var(--spacing-md);
-      transition: box-shadow 0.2s;
+      transition: all 0.2s;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+
+    .course-card.active {
+      opacity: 1;
+      border-left: 4px solid;
+      box-shadow: var(--md-elevation-1);
     }
 
     .course-card:hover {
@@ -1121,6 +1129,16 @@
       showSnackbar('课程已删除');
     }
 
+    function toggleCourseActive(courseId) {
+      const course = courses.find(c => c.id === courseId);
+      if (course) {
+        course.isActive = course.isActive === false ? true : false;
+        saveData();
+        renderCalendar();
+        renderCourseList();
+      }
+    }
+
     // ========== Generate Sessions ==========
     function generateSessions(startDate, endDate, startTime, endTime, weekdays) {
       const sessions = [];
@@ -1234,6 +1252,7 @@
     function getEventsForDate(dateStr) {
       const events = [];
       courses.forEach(course => {
+        if (course.isActive === false) return;
         const session = course.sessions.find(s => s.date === dateStr);
         if (session) {
           events.push({
@@ -1357,12 +1376,15 @@
         return;
       }
 
-      listEl.innerHTML = courses.map(course => `
-        <div class="course-card">
+      listEl.innerHTML = courses.map(course => {
+        const isActive = course.isActive !== false;
+        const activeStyle = isActive ? `background: ${course.color}15; border-color: ${course.color}; border-left-color: ${course.color};` : '';
+        return `
+        <div class="course-card ${isActive ? 'active' : ''}" style="${activeStyle}" onclick="toggleCourseActive('${course.id}')">
           <div class="course-card-header">
             <div class="course-color-dot" style="background: ${course.color}"></div>
             <span class="course-name">${course.name}</span>
-            <div class="course-actions">
+            <div class="course-actions" onclick="event.stopPropagation()">
               <button class="btn-icon" onclick="openEditCourseModal('${course.id}')" title="编辑">
                 <span class="material-symbols-outlined">edit</span>
               </button>
@@ -1392,7 +1414,8 @@
             </div>
           </div>
         </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // ========== Event Context Menu ==========
