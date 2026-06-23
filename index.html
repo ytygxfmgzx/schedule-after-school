@@ -1204,6 +1204,10 @@
         <span class="material-symbols-outlined">upload</span>
         导入数据
       </button>
+      <button class="btn btn-outlined" style="color: var(--md-tertiary); border-color: var(--md-tertiary);" onclick="restoreAllUnscheduled()">
+        <span class="material-symbols-outlined">event_available</span>
+        恢复排课
+      </button>
       <button class="btn btn-outlined" style="color: var(--md-error); border-color: var(--md-error);" onclick="clearAllData()">
         <span class="material-symbols-outlined">delete_sweep</span>
         清空数据
@@ -1944,6 +1948,33 @@
           courses = [];
         }
       }
+    }
+
+    function restoreAllUnscheduled() {
+      let cancelledCount = 0;
+      courses.forEach(course => {
+        course.sessions.forEach(session => {
+          if (session.status === 'cancelled') cancelledCount++;
+        });
+      });
+
+      if (cancelledCount === 0) {
+        showSnackbar('当前没有未排的课');
+        return;
+      }
+
+      if (!confirm(`确定要恢复所有未排的课吗？共 ${cancelledCount} 节课将重新排课。`)) return;
+
+      courses.forEach(course => {
+        course.sessions.forEach(session => {
+          if (session.status === 'cancelled') session.status = 'scheduled';
+        });
+      });
+
+      saveData();
+      renderCalendar();
+      detectConflicts();
+      showSnackbar(`已恢复 ${cancelledCount} 节课`);
     }
 
     function clearAllData() {
