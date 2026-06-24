@@ -3,3 +3,7 @@
 
 # 内容
 content/
+
+# apple
+*.DS_Store
+**/.DS_Store
