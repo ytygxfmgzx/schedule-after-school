@@ -489,13 +489,11 @@
 
     .calendar-day {
       min-height: 90px;
-      max-height: 180px;
       padding: 6px;
       border-right: 1px solid var(--md-outline-variant);
       border-bottom: 1px solid var(--md-outline-variant);
       background: var(--md-surface);
       position: relative;
-      overflow: hidden;
     }
 
     .calendar-day:nth-child(7n) {
@@ -536,17 +534,6 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      max-height: 120px;
-      overflow-y: auto;
-    }
-
-    .day-events::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .day-events::-webkit-scrollbar-thumb {
-      background: var(--md-outline);
-      border-radius: 2px;
     }
 
     .event-chip {
@@ -593,6 +580,48 @@
       font-size: 10px;
       opacity: 0.9;
       flex-shrink: 0;
+    }
+
+    .more-events-btn {
+      font-size: 11px;
+      padding: 2px 6px;
+      margin-top: 2px;
+      border: none;
+      border-radius: 4px;
+      width: 100%;
+      text-align: left;
+      background: var(--md-surface-container-high);
+      color: var(--md-primary);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .more-events-btn:hover {
+      background: var(--md-primary-container);
+    }
+
+    /* 导出图片时不显示「更多」按钮（导出时会临时展开全部课程） */
+    .calendar-panel.export-mode .more-events-btn {
+      display: none;
+    }
+
+    .day-events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .day-events-row {
+      padding: 8px 12px;
+      border-radius: var(--md-shape-medium);
+      cursor: pointer;
+    }
+
+    .event-name-full {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* Modal */
@@ -950,6 +979,11 @@
         font-size: 9px;
       }
 
+      .more-events-btn {
+        font-size: 10px;
+        padding: 1px 4px;
+      }
+
       /* 模态框 */
       .modal {
         width: 95%;
@@ -1120,6 +1154,11 @@
 
       .event-chip .event-time {
         font-size: 8px;
+      }
+
+      .more-events-btn {
+        font-size: 9px;
+        padding: 1px 3px;
       }
 
       .modal {
@@ -1348,6 +1387,21 @@
     </div>
   </div>
 
+  <!-- Day Events Modal（点击「更多」查看当天全部课程） -->
+  <div class="modal-overlay" id="dayEventsModal" onclick="if(event.target===this) closeDayEventsModal()">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="dayEventsTitle">当日课程</h2>
+      </div>
+      <div class="modal-body">
+        <div id="dayEventsList" class="day-events-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-text" onclick="closeDayEventsModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Event Context Menu -->
   <div class="context-menu" id="contextMenu">
     <div class="context-menu-item" onclick="toggleEventStatus()">
@@ -1375,16 +1429,36 @@
     let editingCourseId = null;
     let contextMenuEvent = null;
     let viewMode = 'all'; // 'all' | 'scheduled'
+    let maxVisible = 4; // 每个日期格最多直接展示的课程数（响应式：桌面 4 / 平板及手机 2）
 
     const colors = ['#1a73e8', '#188038', '#e8710a', '#d93025', '#9334e6', '#e91e63', '#00897b', '#5f6368'];
 
     // ========== Initialize ==========
+    function computeMaxVisible() {
+      // 与 CSS 媒体查询断点对齐：≤768px（平板/手机）显示 2 节，桌面显示 4 节
+      return window.innerWidth <= 768 ? 2 : 4;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
       initWeekdaySelector();
       initColorPicker();
+      maxVisible = computeMaxVisible();
       renderCalendar();
       renderCourseList();
+
+      // 窗口尺寸跨档时重算每格可见课程数并重渲染月历（带防抖，仅在跨档时触发）
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          const next = computeMaxVisible();
+          if (next !== maxVisible) {
+            maxVisible = next;
+            renderCalendar();
+          }
+        }, 150);
+      });
     });
 
     // ========== Weekday Selector ==========
@@ -1640,15 +1714,13 @@
       if (isOtherMonth) classes.push('other-month');
       if (isToday) classes.push('today');
 
-      let eventsHtml = '';
-
-      events.forEach(event => {
+      const renderChip = (event) => {
         const chipClasses = ['event-chip'];
         if (event.status === 'scheduled') chipClasses.push('scheduled');
         if (event.status === 'cancelled') chipClasses.push('cancelled');
         if (event.hasConflict) chipClasses.push('conflict');
 
-        eventsHtml += `
+        return `
           <div class="${chipClasses.join(' ')}"
                style="background: ${event.color}"
                onclick="handleEventClick(event, '${event.courseId}', '${dateStr}')"
@@ -1657,7 +1729,23 @@
             ${event.courseName}
           </div>
         `;
+      };
+
+      let eventsHtml = '';
+      events.slice(0, maxVisible).forEach(event => {
+        eventsHtml += renderChip(event);
       });
+
+      // 超出可见数量的课程折叠，点击「更多」查看当天全部
+      const hiddenCount = events.length - maxVisible;
+      if (hiddenCount > 0) {
+        eventsHtml += `
+          <button type="button" class="more-events-btn"
+                  onclick="event.stopPropagation(); showDayEvents('${dateStr}')">
+            +${hiddenCount} 更多
+          </button>
+        `;
+      }
 
       return `
         <div class="${classes.join(' ')}">
@@ -1690,12 +1778,20 @@
         }
       });
 
-      // Mark conflicts
-      const conflicts = detectConflictsForDate(dateStr);
+      // 标记冲突：基于已收集 events 的「已排课」子集两两判断，
+      // 保证冲突检测与显示使用同一批 session（避免 find 条件不一致导致已取消的课仍误标冲突）
+      const scheduledEvents = events.filter(e => e.status === 'scheduled');
+      const conflictCourseIds = new Set();
+      for (let i = 0; i < scheduledEvents.length; i++) {
+        for (let j = i + 1; j < scheduledEvents.length; j++) {
+          if (hasTimeOverlap(scheduledEvents[i], scheduledEvents[j])) {
+            conflictCourseIds.add(scheduledEvents[i].courseId);
+            conflictCourseIds.add(scheduledEvents[j].courseId);
+          }
+        }
+      }
       events.forEach(event => {
-        if (conflicts.some(c =>
-          c.courses.some(cc => cc.courseId === event.courseId)
-        )) {
+        if (conflictCourseIds.has(event.courseId)) {
           event.hasConflict = true;
         }
       });
@@ -1733,35 +1829,6 @@
     // ========== Conflict Detection ==========
     function detectConflicts() {
       // 冲突检测已移除，仅在日历上标记冲突
-    }
-
-    function detectConflictsForDate(dateStr) {
-      const events = [];
-      courses.forEach(course => {
-        const session = course.sessions.find(s => s.date === dateStr && s.status === 'scheduled');
-        if (session) {
-          events.push({
-            courseId: course.id,
-            courseName: course.name,
-            startTime: session.startTime,
-            endTime: session.endTime
-          });
-        }
-      });
-
-      const conflicts = [];
-      for (let i = 0; i < events.length; i++) {
-        for (let j = i + 1; j < events.length; j++) {
-          if (hasTimeOverlap(events[i], events[j])) {
-            conflicts.push({
-              date: dateStr,
-              courses: [events[i], events[j]]
-            });
-          }
-        }
-      }
-
-      return conflicts;
     }
 
     function hasTimeOverlap(a, b) {
@@ -1847,6 +1914,34 @@
         </div>
         `;
       }).join('');
+    }
+
+    // ========== Day Events Modal（当天课程列表） ==========
+    function showDayEvents(dateStr) {
+      const events = getEventsForDate(dateStr);
+      document.getElementById('dayEventsTitle').textContent = formatDateChinese(dateStr) + ' 课程';
+
+      document.getElementById('dayEventsList').innerHTML = events.map(event => {
+        const cls = ['event-chip', 'day-events-row'];
+        if (event.status === 'scheduled') cls.push('scheduled');
+        if (event.status === 'cancelled') cls.push('cancelled');
+        if (event.hasConflict) cls.push('conflict');
+        return `
+          <div class="${cls.join(' ')}"
+               style="background: ${event.color}"
+               onclick="handleEventClick(event, '${event.courseId}', '${event.date}')"
+               title="${event.courseName} (${event.startTime}-${event.endTime})">
+            <span class="event-time">${event.startTime}–${event.endTime}</span>
+            <span class="event-name-full">${event.courseName}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('dayEventsModal').classList.add('active');
+    }
+
+    function closeDayEventsModal() {
+      document.getElementById('dayEventsModal').classList.remove('active');
     }
 
     // ========== Event Context Menu ==========
@@ -2036,18 +2131,20 @@
     // ========== Export Image ==========
     async function exportImage() {
       const calendarPanel = document.querySelector('.calendar-panel');
+      const prevMaxVisible = maxVisible;
 
       try {
         showSnackbar('正在生成图片...');
         calendarPanel.classList.add('export-mode');
+        // 导出时临时展开当天全部课程，保证截图完整（hiddenCount 为负，不显示「更多」按钮）
+        maxVisible = Infinity;
+        renderCalendar();
 
         const canvas = await html2canvas(calendarPanel, {
           backgroundColor: '#f8f9fa',
           scale: 2,
           useCORS: true
         });
-
-        calendarPanel.classList.remove('export-mode');
 
         const link = document.createElement('a');
         link.download = `排课表_${document.getElementById('monthTitle').textContent}.png`;
@@ -2058,6 +2155,10 @@
       } catch (err) {
         showSnackbar('导出失败，请重试');
         console.error(err);
+      } finally {
+        calendarPanel.classList.remove('export-mode');
+        maxVisible = prevMaxVisible;
+        renderCalendar();
       }
     }
 
